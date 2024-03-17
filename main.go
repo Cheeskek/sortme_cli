@@ -11,11 +11,12 @@ import (
 )
 
 const (
-    api_url = "https://api.sort-me.org"
-    cache_dir = ".sm"
-    statements_cache = "statements.json"
-    auth = "Bearer <token>"
-    languages = "ru,en-US"
+    kApiUrl = "https://api.sort-me.org"
+    kCacheDir = ".sm"
+    kStatementsCache = "statements.json"
+    kToken = "<token>"
+    kAuth = "Bearer " + kToken
+    kLanguages = "ru,en-US"
 )
 
 // json parsing types
@@ -32,6 +33,7 @@ type (
         Ended                 bool       `json:"ended"`
     }
 
+    // not all fields included, only nessesary
     Statements struct {
         Ends                  uint64     `json:"ends"`
         Langs struct {        
@@ -72,12 +74,12 @@ type (
 // helper functions
 
 func fetchAndParse(payload string, v any) error {
-    req, err := http.NewRequest("GET", api_url + payload, nil)
+    req, err := http.NewRequest("GET", kApiUrl + payload, nil)
     if err != nil {
         return err
     }
-    req.Header.Add("authorization", auth)
-    req.Header.Add("accept-language", languages)
+    req.Header.Add("authorization", kAuth)
+    req.Header.Add("accept-language", kLanguages)
 
     client := &http.Client{}
     res, err := client.Do(req)
@@ -126,12 +128,19 @@ func contest() error {
         fmt.Printf("%d: %v | %v\n", i, contests[i].Name, contests[i].OrgName)
     }
 
-    var choice string
-    fmt.Scanln(&choice)
-
-    contest_ind, err := strconv.Atoi(choice)
-    if err != nil {
-        return err
+    choice := ""
+    var contest_ind int
+    for choice == "" || err != nil || contest_ind >= len(contests)  {
+        fmt.Scanln(&choice)
+        contest_ind, err = strconv.Atoi(choice)
+        if err != nil {
+            fmt.Printf("Please input a number!\n")
+            fmt.Printf("Choose current contest:\n")
+        }
+        if contest_ind >= len(contests) {
+            fmt.Printf("Contest chosen is out of range!\n")
+            fmt.Printf("Choose current contest:\n")
+        }
     }
 
     contest_id := contests[contest_ind].Id
@@ -141,7 +150,7 @@ func contest() error {
         return err
     }
 
-    statements_file, err := os.Create(cache_dir + "/" + statements_cache)
+    statements_file, err := os.Create(kCacheDir + "/" + kStatementsCache)
     defer statements_file.Close()
     if err != nil {
         return err
@@ -151,7 +160,8 @@ func contest() error {
         return err
     }
     statements_file.Write(json_bytes)
-    fmt.Printf("Current contest changed, statements written to %v\n", cache_dir + "/" + statements_cache)
+    fmt.Printf("Current contest changed, statements written to %v\n", kCacheDir + "/" + kStatementsCache)
+
 
     return nil
 }
@@ -161,6 +171,87 @@ func task() error {
         fmt.Printf("task help (to be added)")
         return nil
     } 
+
+    show_legend := true
+    show_in_desc := true
+    show_out_desc := true
+    show_comment := true
+
+    if (len(os.Args) >= 4) {
+        if os.Args[2] == "ignore" {
+            for _, i := range os.Args[3] {
+                switch i {
+                case 'l':
+                    show_legend = false
+                case 'i':
+                    show_in_desc = false
+                case 'o':
+                    show_out_desc = false
+                case 'c':
+                    show_comment = false
+                }
+            }
+        } else if os.Args[2] == "only" {
+            show_legend = false
+            show_in_desc = false
+            show_out_desc = false
+            show_comment = false
+            for _, i := range os.Args[3] {
+                switch i {
+                case 'l':
+                    show_legend = true
+                case 'i':
+                    show_in_desc = true
+                case 'o':
+                    show_out_desc = true
+                case 'c':
+                    show_comment = true
+                }
+            }
+        }
+    }
+
+    var statements Statements
+    statements_file, err := os.ReadFile(kCacheDir + "/" + kStatementsCache)
+    if err != nil {
+        return err
+    }
+    json.Unmarshal(statements_file, &statements)
+
+    if len(os.Args) < 2 {
+        return errors.New("Task number not given!")
+    }
+
+
+    if (len(os.Args) >= 3 && os.Args[2] == "list") || len(os.Args) == 2 {
+        for i, task := range statements.Tasks {
+            fmt.Printf("%d: %v, Solved by: %v\n", i, task.Name, task.SolvedBy)
+        }
+        return nil
+    } 
+
+    task_ind, err := strconv.Atoi(os.Args[len(os.Args) - 1])
+    if err != nil {
+        return err
+    }
+    if task_ind >= len(statements.Tasks) {
+        return errors.New("Tasks number is out of range")
+    }
+
+    if show_legend {
+        fmt.Printf("%v\n", statements.Tasks[task_ind].MainDescription)
+    }
+    if show_comment {
+        fmt.Printf("%v\n\n", statements.Tasks[task_ind].Comment)
+    } else {
+        fmt.Printf("\n")
+    }
+    if show_in_desc {
+        fmt.Printf("%v\n", statements.Tasks[task_ind].InDescription)
+    }
+    if show_out_desc {
+        fmt.Printf("%v\n", statements.Tasks[task_ind].OutDescription)
+    }
 
     return nil
 }
@@ -186,7 +277,7 @@ func rating() error {
 func main() {
     var err error = nil
 
-    err = os.Mkdir(cache_dir, os.ModePerm)
+    err = os.Mkdir(kCacheDir, os.ModePerm)
     if err != nil && !os.IsExist(err) {
         fmt.Fprintf(os.Stderr, "Error: %v\n", err)
         os.Exit(1)
