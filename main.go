@@ -14,14 +14,16 @@ const (
     kApiUrl = "https://api.sort-me.org"
     kCacheDir = ".sm"
     kStatementsCache = "statements.json"
-    kToken = "<token>"
-    kAuth = "Bearer " + kToken
-    kLanguages = "ru,en-US"
 )
 
 // json parsing types
 
 type (
+    Config struct {
+        Token                 string     `json:"token"`
+        Langs                 string     `json:"langs"`
+    }
+
     Contest struct {
         Id                    int        `json:"id"`
         Name                  string     `json:"name"`
@@ -73,13 +75,13 @@ type (
 
 // helper functions
 
-func fetchAndParse(payload string, v any) error {
+func fetchAndParse(payload string, v any, config *Config) error {
     req, err := http.NewRequest("GET", kApiUrl + payload, nil)
     if err != nil {
         return err
     }
-    req.Header.Add("authorization", kAuth)
-    req.Header.Add("accept-language", kLanguages)
+    req.Header.Add("authorization", "Bearer " + config.Token)
+    req.Header.Add("accept-language", config.Langs)
 
     client := &http.Client{}
     res, err := client.Do(req)
@@ -104,6 +106,26 @@ func fetchAndParse(payload string, v any) error {
     return nil
 }
 
+func getConfig() (Config, error) {
+    config_dir, err := os.UserConfigDir()
+    if err != nil {
+        return Config{}, err
+    }
+    
+    config_bytes, err := os.ReadFile(config_dir + "/sort-me/config.json")
+    if err != nil {
+        return Config{}, err
+    }
+    
+    var config Config
+    err = json.Unmarshal(config_bytes, &config)
+    if err != nil {
+        return Config{}, err
+    }
+
+    return config, nil
+}
+
 // functions for actions
 
 func help() error {
@@ -111,14 +133,14 @@ func help() error {
     return nil
 }
 
-func contest() error {
+func contest(config *Config) error {
     if len(os.Args) >= 3 && os.Args[2] == "help" {
         fmt.Printf("contest help (to be added)")
         return nil
     }
 
     var contests []Contest
-    err := fetchAndParse("/getUpcomingContests", &contests)
+    err := fetchAndParse("/getUpcomingContests", &contests, config)
     if err != nil {
         return err
     }
@@ -145,7 +167,7 @@ func contest() error {
 
     contest_id := contests[contest_ind].Id
     var statements Statements
-    err = fetchAndParse("/getContestTasks?id=" + fmt.Sprint(contest_id), &statements)
+    err = fetchAndParse("/getContestTasks?id=" + fmt.Sprint(contest_id), &statements, config)
     if err != nil {
         return err
     }
@@ -166,7 +188,7 @@ func contest() error {
     return nil
 }
 
-func task() error {
+func task(config *Config) error {
     if len(os.Args) >= 3 && os.Args[2] == "help" {
         fmt.Printf("task help (to be added)")
         return nil
@@ -213,6 +235,10 @@ func task() error {
 
     var statements Statements
     statements_file, err := os.ReadFile(kCacheDir + "/" + kStatementsCache)
+    if os.IsNotExist(err) {
+        fmt.Printf("Contest not chosen!")
+        err = contest(config)
+    }
     if err != nil {
         return err
     }
@@ -256,26 +282,76 @@ func task() error {
     return nil
 }
 
-func submit() error {
-    if len(os.Args) >= 3 && os.Args[2] == "help" {
-        fmt.Printf("submit help (to be added)")
-        return nil
-    } 
+// func submit(config *Config) error {
+//     if len(os.Args) >= 3 && os.Args[2] == "help" {
+//         fmt.Printf("submit help (to be added)")
+//         return nil
+//     } 
+//
+//     return nil
+// }
 
-    return nil
-}
+// func rating(config *Config) error {
+//     if len(os.Args) >= 3 && os.Args[2] == "help" {
+//         fmt.Printf("rating help (to be added)")
+//         return nil
+//     } 
+//
+//     return nil
+// }
 
-func rating() error {
-    if len(os.Args) >= 3 && os.Args[2] == "help" {
-        fmt.Printf("rating help (to be added)")
-        return nil
-    } 
+func configure() (Config, error) {
+    config_dir, err := os.UserConfigDir()
+    if err != nil {
+        return Config{}, err
+    }
 
-    return nil
+    var config Config
+    fmt.Printf("Please paste your API key\n")
+    fmt.Scanln(&config.Token)
+    fmt.Println(config.Token)
+    fmt.Printf("Please put your preffered languages (Example: \"ru, en-US\" without quotes)\n")
+    fmt.Scanln(&config.Langs)
+    fmt.Println(config.Langs)
+    fmt.Printf("Now creating your config file, do not hang up!\n")
+
+    err = os.Mkdir(config_dir + "/sort-me", os.ModePerm)
+    if err != nil && !os.IsExist(err) {
+        return Config{}, err
+    }
+    config_bytes, err := json.Marshal(config)
+    if err != nil {
+        return Config{}, err
+    }
+    err = os.WriteFile(config_dir + "/sort-me/config.json", config_bytes, os.ModePerm)
+    if err != nil {
+        return Config{}, err
+    }
+
+    fmt.Printf("Config file created at " + config_dir + "/sort-me/config.json" + ". Happy SortMeing!\n")
+
+    return config, nil
 }
 
 func main() {
     var err error = nil
+
+    already_configured := false
+
+    config, err := getConfig()
+    if os.IsNotExist(err) {
+        fmt.Printf("Config not found... Let's create it!\n")
+        config, err = configure()
+        if err != nil {
+            fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+            os.Exit(1)
+        }
+        os.Exit(0)
+    }
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+        os.Exit(1)
+    }
 
     err = os.Mkdir(kCacheDir, os.ModePerm)
     if err != nil && !os.IsExist(err) {
@@ -288,13 +364,17 @@ func main() {
     } else {
         switch os.Args[1] {
         case "contest":
-            err = contest()
+            err = contest(&config)
         case "task":
-            err = task()
-        case "submit":
-            err = submit()
-        case "rating":
-            err = rating()
+            err = task(&config)
+        // case "submit":
+        //     err = submit(&config)
+        // case "rating":
+        //     err = rating(&config)
+        case "configure":
+            if !already_configured {
+                _, err = configure()
+            }
         default:
             err = help()
         }
