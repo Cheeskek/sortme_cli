@@ -85,25 +85,45 @@ type (
 	}
 
 	Verdict struct {
-		Compiled         bool   `json:"compiled"`
-		CompilerLog      string `json:"compiler_log"`
-		ShownTest        uint   `json:"shown_test"`
-		ShownVerdict     uint   `json:"shown_verdict"`
-		ShownVerdictText string `json:"shown_verdict_text"`
-		Subtasks         []struct {
-			FailedTests []struct {
+		Compiled             bool   `json:"compiled"`
+		CompilerLog          string `json:"compiler_log"`
+		ShownTest            uint   `json:"shown_test"`
+		ShownVerdict         uint   `json:"shown_verdict"`
+		ShownVerdictText     string `json:"shown_verdict_text"`
+		Subtasks             []struct {
+			FailedTests      []struct {
 				Milliseconds uint64 `json:"milliseconds"`
 				N            uint64 `json:"n"`
 				PartialScore uint64 `json:"partial_score"`
 				Verdict      uint   `json:"verdict"`
 				VerdictText  string `json:"verdict_text"`
-			} `json:"failed_tests"`
-			Points    uint   `json:"points"`
-			Skipped   bool   `json:"skipped"`
-			WorstTime uint64 `json:"worst_time"`
-		} `json:"subtasks"`
-		TotalPoints uint `json:"total_points"`
+			}                       `json:"failed_tests"`
+			Points           uint   `json:"points"`
+			Skipped          bool   `json:"skipped"`
+			WorstTime        uint64 `json:"worst_time"`
+		}                           `json:"subtasks"`
+		TotalPoints          uint   `json:"total_points"`
 	}
+
+    Rating struct {
+        Frozen   bool     `json:"frozen"`
+        Labels   []string `json:"labels"`
+        Pages    uint     `json:"pages"`
+        Table    []Points `json:"table"`
+        You      Points   `json:"you"`
+        YourPage uint     `json:"your_page"`
+    }
+
+    Points struct {
+        Avatar  string   `json:"avatar"`
+        Label   uint     `json:"label"`
+        Login   string   `json:"login"`
+        Place   uint64   `json:"place"`
+        Results [][]int `json:"results"`
+        Sum     uint64   `json:"sum"`
+        Time    uint64   `json:"time"`
+        Uid     uint     `json:"uid"`
+    }
 )
 
 // helper functions
@@ -512,14 +532,98 @@ func submit(taskInd int, filename string, lang string, config *Config) error {
 	return nil
 }
 
-// func rating(config *Config) error {
-//     if len(os.Args) >= 3 && os.Args[2] == "help" {
-//         fmt.Printf("rating help (to be added)")
-//         return nil
-//     }
-//
-//     return nil
-// }
+func rating(showByLabel bool, showAll bool, config *Config) error {
+	statements, err := getStatements()
+	if err != nil {
+		return err
+	}
+
+    curPage := uint(1)
+    curLabel := 0
+    var rating Rating
+
+    var reqUrl url.URL
+    reqUrl.Scheme = "https"
+    reqUrl.Host = API_URL
+    reqUrl.Path = "getContestTable"
+	q := reqUrl.Query()
+    q.Add("contestid", fmt.Sprint(statements.Id))
+	q.Add("page", "1")
+	q.Add("label", "0")
+	reqUrl.RawQuery = q.Encode()
+    makeSortmeRequest("GET", reqUrl, nil, &rating, config)
+
+    if showByLabel {
+        fmt.Printf("Choose label:\n")
+        for ind, label := range rating.Labels {
+            fmt.Printf("%d: %s\n", ind + 1, label)
+        }
+        var choice string
+        fmt.Scanln(&choice)
+        curLabel, err = strconv.Atoi(choice)
+        if err != nil {
+            return err
+        }
+        q := reqUrl.Query()
+        q.Set("label", fmt.Sprint(curLabel))
+        reqUrl.RawQuery = q.Encode()
+        makeSortmeRequest("GET", reqUrl, nil, &rating, config)
+    }
+
+    for {
+        for _, points := range rating.Table {
+            fmt.Printf("%3d: %30s ", points.Place, points.Login)
+            for _, res := range points.Results {
+                fmt.Printf("| %3d %2d:%02d:%02d ", res[0], res[1] / 3600, res[1] % 3600 / 60, res[1] % 60)
+            }
+            fmt.Printf(" %d\n", points.Sum)
+        }
+        
+        if !showAll {
+            fmt.Printf("%d / %d pages\n", curPage, rating.Pages)
+            fmt.Printf("%3d: you  ", rating.You.Place)
+            for _, res := range rating.You.Results {
+                fmt.Printf("| %3d %2d:%02d:%02d ", res[0], res[1] / 3600, res[1] % 3600 / 60, res[1] % 60)
+            }
+            fmt.Printf(" %d\n", rating.You.Sum)
+        }
+
+        quit := false
+        if showAll {
+            curPage++
+            if curPage == rating.Pages + 1 {
+                quit = true
+            }
+        } else {
+            validChoice := false
+            var choice string
+            for !validChoice {
+                fmt.Scanln(&choice)
+                validChoice = true
+                switch choice {
+                case "+":
+                    curPage = curPage % rating.Pages + 1
+                case "-":
+                    curPage = (curPage + rating.Pages - 2) % rating.Pages + 1
+                case "q":
+                    quit = true
+                default:
+                    fmt.Println("Wrong option: (+/-/q)")
+                    validChoice = false
+                }
+            }
+        }
+        if quit {
+            break
+        }
+        q := reqUrl.Query()
+        q.Set("page", fmt.Sprint(curPage))
+        reqUrl.RawQuery = q.Encode()
+        makeSortmeRequest("GET", reqUrl, nil, &rating, config)
+    }
+
+    return nil
+}
 
 func createConfig() (Config, error) {
 	config_dir, err := os.UserConfigDir()
@@ -599,6 +703,10 @@ func main() {
 
 	configureCom := parser.NewCommand("configure", "Make conifg file")
 
+    ratingCom := parser.NewCommand("rating", "Get rating table")
+    ratingLabel := ratingCom.Flag("l", "label", &argparse.Options{Default: false})
+    ratingAll := ratingCom.Flag("a", "all", &argparse.Options{Default: false})
+
 	err = parser.Parse(os.Args)
 	if err != nil {
         fmt.Println(parser.Usage(fmt.Sprintf("Error: %v\n", err)))
@@ -617,7 +725,9 @@ func main() {
 		if !already_configured {
 			_, err = createConfig()
 		}
-	}
+	} else if ratingCom.Happened() {
+        rating(*ratingLabel, *ratingAll, &config)
+    }
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
