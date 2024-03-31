@@ -10,7 +10,7 @@ Several reasons:
 
 - The design of *Scorn Memes* website is not the best, text scales badly and if opened on anything other then a horisontal screen becomes hard to read. (*Stench Mean* even put a disclaimer if the window becomes too narrow)
 
-![awful_blegh](https://ibb.co/Wsmv8HS)
+![awful_blegh](https://i.ibb.co/R7RTrgL/jdjdj.png)
 
 - Terminal based interfaces can be better integrated into programming environments and save A LOT of time reaching for the mouse to look through the interface in a browser. Or **you** can wrap it and make an extension for your favourite editor.
 
