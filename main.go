@@ -57,6 +57,7 @@ func main() {
     ratingCom := parser.NewCommand("rating", "Get rating table")
     ratingLabel := ratingCom.Flag("l", "label", &argparse.Options{Default: false})
     ratingAll := ratingCom.Flag("a", "all", &argparse.Options{Default: false})
+    ratingTime := ratingCom.Flag("t", "time", &argparse.Options{Default: false})
 
 	err = parser.Parse(os.Args)
 	if err != nil {
@@ -73,7 +74,7 @@ func main() {
 	} else if submitCom.Happened() {
 		err = lib.Submit(*submitTaskInd, *submitFilename, *submitLang, &config)
 	} else if ratingCom.Happened() {
-        lib.PrintRating(*ratingLabel, *ratingAll, &config)
+        lib.PrintRating(*ratingLabel, *ratingTime, *ratingAll, &config)
 	} else if configureCom.Happened() {
 		if !already_configured {
 			_, err = lib.CreateConfig()

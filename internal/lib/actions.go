@@ -286,7 +286,7 @@ func Submit(taskInd int, filename string, lang string, config *Config) error {
 	return nil
 }
 
-func PrintRating(showByLabel bool, showAll bool, config *Config) error {
+func PrintRating(showByLabel bool, showTime bool, showAll bool, config *Config) error {
 	statements, err := getStatements()
 	if err != nil {
 		return err
@@ -327,8 +327,14 @@ func PrintRating(showByLabel bool, showAll bool, config *Config) error {
     for {
         for _, points := range rating.Table {
             fmt.Printf("%3d: %30s ", points.Place, points.Login)
-            for _, res := range points.Results {
-                fmt.Printf("| %3d %2d:%02d:%02d ", res[0], res[1] / 3600, res[1] % 3600 / 60, res[1] % 60)
+            if showTime {
+                for _, res := range points.Results {
+                    fmt.Printf("| %3d %2d:%02d:%02d ", res[0], res[1] / 3600, res[1] % 3600 / 60, res[1] % 60)
+                }
+            } else {
+                for _, res := range points.Results {
+                    fmt.Printf("| %3d ", res[0])
+                }
             }
             fmt.Printf(" %d\n", points.Sum)
         }
@@ -336,8 +342,14 @@ func PrintRating(showByLabel bool, showAll bool, config *Config) error {
         if !showAll {
             fmt.Printf("%d / %d pages\n", curPage, rating.Pages)
             fmt.Printf("%3d: you  ", rating.You.Place)
-            for _, res := range rating.You.Results {
-                fmt.Printf("| %3d %2d:%02d:%02d ", res[0], res[1] / 3600, res[1] % 3600 / 60, res[1] % 60)
+            if showTime {
+                for _, res := range rating.You.Results {
+                    fmt.Printf("| %3d %2d:%02d:%02d ", res[0], res[1] / 3600, res[1] % 3600 / 60, res[1] % 60)
+                }
+            } else {
+                for _, res := range rating.You.Results {
+                    fmt.Printf("| %3d ", res[0])
+                }
             }
             fmt.Printf(" %d\n", rating.You.Sum)
         }

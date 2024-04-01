@@ -96,7 +96,9 @@ $ sortme_cli rating
 
 Displays rating in pages (similar to *Spore Tems*)
 
--Add the `--label` (or `-l`) flag display only those with a label (ex. univercity group).
+-Add the `--label` (or `-l`) flag to display only those with a label (ex. univercity group).
+
+-Add the `--time` (or `-t`) flag to diplay times of submissions.
 
 -Add the `--all` (or `-a`) flag to print everything at once without pages.
 
