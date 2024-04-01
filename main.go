@@ -1,4 +1,4 @@
-package sortme_cli
+package main
 
 import (
 	"fmt"
@@ -6,10 +6,6 @@ import (
 	"os"
     "github.com/Cheeskek/sortme_cli/internal/lib"
 )
-
-// helper functions
-
-// functions for actions
 
 func main() {
 	var err error = nil
