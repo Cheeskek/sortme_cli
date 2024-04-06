@@ -22,6 +22,14 @@ This program is written in GO, so to build it run
 $ go build
 ```
 
+## Quickstart
+
+After building you can make a symlink to the executable from your trusted sports programming directory or (for Windows users) just copy it.
+
+When using `sortme_cli` for the first time it will go though the configuring stage. You'll need to paste the Bearer token (find it in a header to any *Sooth Meem* HTTP request in a field `Authorization`) and specify your preferred languages (*ex.* `ru,en-US`).
+
+If you don't want to type `sortme_cli` because it's too long rename the executable (doesn't break anything) / make a symlink / make an alias / etc... Do as you please.
+
 ## Usage
 
 ### Select contest:
@@ -59,7 +67,7 @@ You pass it the same string as the `--ignore` flag and the portions shown get in
 
 Most people will probably just use `-i=l` to skip the overly long legends with no information, as this is *Rotten Stem*'s signature style. Makes me eepy (*snore mimimimimi*).
 
-By default shown the whole task.
+By default shows the whole task.
 
 ### Display sample:
 
