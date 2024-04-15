@@ -38,18 +38,18 @@ func main() {
 	contestCom := parser.NewCommand("c", "Choose contest from upcoming")
 
 	taskCom := parser.NewCommand("t", "Display task description")
-	taskInd := taskCom.IntPositional(&argparse.Options{Default: -1})
+	taskInd := taskCom.StringPositional(&argparse.Options{Default: "-1"})
     taskOnly := taskCom.String("o", "only", nil)
     taskIgnore := taskCom.String("i", "ignore", nil)
     
 	sampleCom := parser.NewCommand("s", "Display task sample")
-    sampleTaskInd := sampleCom.IntPositional(&argparse.Options{Required: true})
+    sampleTaskInd := sampleCom.StringPositional(&argparse.Options{Required: true})
     sampleInd := sampleCom.Int("s", "sample", &argparse.Options{Default: 0})
     sampleShow := sampleCom.String("t", "type", &argparse.Options{Default: "io"})
 
 	submitCom := parser.NewCommand("S", "Submit solution")
     submitFilename := submitCom.StringPositional(nil)
-    submitTaskInd := submitCom.IntPositional(&argparse.Options{Required: true})
+    submitTaskInd := submitCom.StringPositional(&argparse.Options{Required: true})
     submitLang := submitCom.String("l", "lang", nil)
 
 	configureCom := parser.NewCommand("C", "Make config file")
@@ -68,11 +68,20 @@ func main() {
 	if contestCom.Happened() {
 		err = lib.ChangeContest(&config)
 	} else if taskCom.Happened() {
-		err = lib.PrintTask(*taskInd, *taskOnly, *taskIgnore)
+        taskNum, err := lib.TaskIndToInt(*taskInd)
+        if err == nil {
+            err = lib.PrintTask(taskNum, *taskOnly, *taskIgnore)
+        }
 	} else if sampleCom.Happened() {
-		err = lib.PrintSample(*sampleTaskInd, *sampleInd, *sampleShow)
+        taskNum, err := lib.TaskIndToInt(*sampleTaskInd)
+        if err == nil {
+            err = lib.PrintSample(taskNum, *sampleInd, *sampleShow)
+        }
 	} else if submitCom.Happened() {
-		err = lib.Submit(*submitTaskInd, *submitFilename, *submitLang, &config)
+        taskNum, err := lib.TaskIndToInt(*submitTaskInd)
+        if err == nil {
+            err = lib.Submit(taskNum, *submitFilename, *submitLang, &config)
+        }
 	} else if ratingCom.Happened() {
         lib.PrintRating(*ratingLabel, *ratingTime, *ratingAll, &config)
 	} else if configureCom.Happened() {

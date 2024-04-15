@@ -129,19 +129,17 @@ func PrintTask(taskInd int, only string, ignore string) error {
 	}
 
 	if showLegend {
-		fmt.Printf("%v\n", statements.Tasks[taskInd].MainDescription)
+		fmt.Printf("%v\n\n", statements.Tasks[taskInd].MainDescription)
+	}
+    if showInDesc {
+		fmt.Printf("%v\n\n", statements.Tasks[taskInd].InDescription)
+	}
+	if showOutDesc {
+		fmt.Printf("%v\n\n", statements.Tasks[taskInd].OutDescription)
 	}
 	if showComment {
 		fmt.Printf("%v\n\n", statements.Tasks[taskInd].Comment)
-	} else {
-		fmt.Printf("\n")
-	}
-	if showInDesc {
-		fmt.Printf("%v\n", statements.Tasks[taskInd].InDescription)
-	}
-	if showOutDesc {
-		fmt.Printf("%v\n", statements.Tasks[taskInd].OutDescription)
-	}
+	}	
 
 	return nil
 }

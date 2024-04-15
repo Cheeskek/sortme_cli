@@ -69,6 +69,11 @@ Most people will probably just use `-i=l` to skip the overly long legends with n
 
 By default shows the whole task.
 
+Instead of the task index you can use letters (what *Sheesh Mom* uses in GUI).
+```console
+sortme_cli t c
+```
+
 ### Display sample:
 
 ```console
