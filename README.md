@@ -35,7 +35,7 @@ If you don't want to type `sortme_cli` because it's too long rename the executab
 ### Select contest:
 
 ```console
-$ sortme_cli contest
+$ sortme_cli c
 ```
 
 Choosing contests from the archive is not possible currently.
@@ -43,13 +43,13 @@ Choosing contests from the archive is not possible currently.
 ### List all tasks
 
 ```console
-$ sortme_cli task
+$ sortme_cli t
 ```
 
 ### Display task: 
 
 ```console
-$ sortme_cli task 2 -i=l
+$ sortme_cli t 2 -i=l
 ```
 
 If the `--ignore` (or `-i`) argument is added, you can skip some portions.
@@ -72,7 +72,7 @@ By default shows the whole task.
 ### Display sample:
 
 ```console
-$ sortme_cli sample 2 -s=1 -t=i
+$ sortme_cli s 2 -s=1 -t=i
 ```
 
 The `--sample` (or `-s`) argument used to choose which sample to print (0 by default). 
@@ -81,7 +81,7 @@ The `--type` (or `-t`) argument used to print only input (`-t=i`) or output (`-t
 ### Submit solution:
 
 ```console
-$ sortme_cli submit 2 main.cpp -l=c++
+$ sortme_cli S main.cpp 2 -l=c++
 ```
 
 The `--lang` (or `-l`) argument can be ommitted if submit code from a file.
@@ -90,7 +90,7 @@ Filename can be ommmited, so you can submit code from `stdin`, but then specifyi
 ### Configure:
 
 ```console
-$ sortme_cli configure
+$ sortme_cli C
 ```
 
 Delete config and make a new one.
@@ -99,7 +99,7 @@ It is required to make a config if it does not exist, you wouldn't need to use i
 ### Display rating:
 
 ```console
-$ sortme_cli rating
+$ sortme_cli r
 ```
 
 Displays rating in pages (similar to *Spore Tems*)

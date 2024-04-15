@@ -35,26 +35,26 @@ func main() {
 
 	parser := argparse.NewParser("sortme_cli", "Spores moomins cli tool")
 
-	contestCom := parser.NewCommand("contest", "Choose contest from upcoming")
+	contestCom := parser.NewCommand("c", "Choose contest from upcoming")
 
-	taskCom := parser.NewCommand("task", "Display task description")
+	taskCom := parser.NewCommand("t", "Display task description")
 	taskInd := taskCom.IntPositional(&argparse.Options{Default: -1})
     taskOnly := taskCom.String("o", "only", nil)
     taskIgnore := taskCom.String("i", "ignore", nil)
     
-	sampleCom := parser.NewCommand("sample", "Display task sample")
+	sampleCom := parser.NewCommand("s", "Display task sample")
     sampleTaskInd := sampleCom.IntPositional(&argparse.Options{Required: true})
     sampleInd := sampleCom.Int("s", "sample", &argparse.Options{Default: 0})
     sampleShow := sampleCom.String("t", "type", &argparse.Options{Default: "io"})
 
-	submitCom := parser.NewCommand("submit", "Submit solution")
-    submitTaskInd := submitCom.IntPositional(&argparse.Options{Required: true})
+	submitCom := parser.NewCommand("S", "Submit solution")
     submitFilename := submitCom.StringPositional(nil)
+    submitTaskInd := submitCom.IntPositional(&argparse.Options{Required: true})
     submitLang := submitCom.String("l", "lang", nil)
 
-	configureCom := parser.NewCommand("configure", "Make conifg file")
+	configureCom := parser.NewCommand("C", "Make config file")
 
-    ratingCom := parser.NewCommand("rating", "Get rating table")
+    ratingCom := parser.NewCommand("r", "Get rating table")
     ratingLabel := ratingCom.Flag("l", "label", &argparse.Options{Default: false})
     ratingAll := ratingCom.Flag("a", "all", &argparse.Options{Default: false})
     ratingTime := ratingCom.Flag("t", "time", &argparse.Options{Default: false})
