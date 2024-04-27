@@ -131,7 +131,7 @@ func PrintTask(taskInd int, only string, ignore string) error {
 	if showLegend {
 		fmt.Printf("%v\n\n", statements.Tasks[taskInd].MainDescription)
 	}
-    if showInDesc {
+	if showInDesc {
 		fmt.Printf("%v\n\n", statements.Tasks[taskInd].InDescription)
 	}
 	if showOutDesc {
@@ -139,7 +139,7 @@ func PrintTask(taskInd int, only string, ignore string) error {
 	}
 	if showComment {
 		fmt.Printf("%v\n\n", statements.Tasks[taskInd].Comment)
-	}	
+	}
 
 	return nil
 }
@@ -184,13 +184,13 @@ func Submit(taskInd int, filename string, lang string, config *Config) error {
 		return err
 	}
 
-    if taskInd < 0 || taskInd > len(statements.Tasks) {
-        return fmt.Errorf("task index out of range")
-    }
+	if taskInd < 0 || taskInd > len(statements.Tasks) {
+		return fmt.Errorf("task index out of range")
+	}
 
 	var codeBytes []byte
 
-    if filename == "" {
+	if filename == "" {
 		codeBytes, err = io.ReadAll(os.Stdin)
 		if err != nil {
 			return err
@@ -207,7 +207,7 @@ func Submit(taskInd int, filename string, lang string, config *Config) error {
 		if err != nil {
 			return err
 		}
-    } else {
+	} else {
 		codeBytes, err = os.ReadFile(filename)
 		if err != nil {
 			return err
@@ -215,7 +215,7 @@ func Submit(taskInd int, filename string, lang string, config *Config) error {
 		if !doesLangExist(lang, &statements) {
 			return fmt.Errorf("passed lang is not supported by this contest")
 		}
-    }
+	}
 
 	submission := Submission{
 		string(codeBytes),
@@ -290,103 +290,103 @@ func PrintRating(showByLabel bool, showTime bool, showAll bool, config *Config) 
 		return err
 	}
 
-    curPage := uint(1)
-    curLabel := 0
-    var rating Rating
+	curPage := uint(1)
+	curLabel := 0
+	var rating Rating
 
-    var reqUrl url.URL
-    reqUrl.Scheme = "https"
-    reqUrl.Host = API_URL
-    reqUrl.Path = "getContestTable"
+	var reqUrl url.URL
+	reqUrl.Scheme = "https"
+	reqUrl.Host = API_URL
+	reqUrl.Path = "getContestTable"
 	q := reqUrl.Query()
-    q.Add("contestid", fmt.Sprint(statements.Id))
+	q.Add("contestid", fmt.Sprint(statements.Id))
 	q.Add("page", "1")
 	q.Add("label", "0")
 	reqUrl.RawQuery = q.Encode()
-    makeSortmeRequest("GET", reqUrl, nil, &rating, config)
+	makeSortmeRequest("GET", reqUrl, nil, &rating, config)
 
-    if showByLabel {
-        fmt.Printf("Choose label:\n")
-        for ind, label := range rating.Labels {
-            fmt.Printf("%d: %s\n", ind + 1, label)
-        }
-        var choice string
-        fmt.Scanln(&choice)
-        curLabel, err = strconv.Atoi(choice)
-        if err != nil {
-            return err
-        }
-        q := reqUrl.Query()
-        q.Set("label", fmt.Sprint(curLabel))
-        reqUrl.RawQuery = q.Encode()
-        makeSortmeRequest("GET", reqUrl, nil, &rating, config)
-    }
+	if showByLabel {
+		fmt.Printf("Choose label:\n")
+		for ind, label := range rating.Labels {
+			fmt.Printf("%d: %s\n", ind+1, label)
+		}
+		var choice string
+		fmt.Scanln(&choice)
+		curLabel, err = strconv.Atoi(choice)
+		if err != nil {
+			return err
+		}
+		q := reqUrl.Query()
+		q.Set("label", fmt.Sprint(curLabel))
+		reqUrl.RawQuery = q.Encode()
+		makeSortmeRequest("GET", reqUrl, nil, &rating, config)
+	}
 
-    for {
-        for _, points := range rating.Table {
-            fmt.Printf("%3d: %30s ", points.Place, points.Login)
-            if showTime {
-                for _, res := range points.Results {
-                    fmt.Printf("| %3d %2d:%02d:%02d ", res[0], res[1] / 3600, res[1] % 3600 / 60, res[1] % 60)
-                }
-            } else {
-                for _, res := range points.Results {
-                    fmt.Printf("| %3d ", res[0])
-                }
-            }
-            fmt.Printf(" %d\n", points.Sum)
-        }
-        
-        if !showAll {
-            fmt.Printf("%d / %d pages\n", curPage, rating.Pages)
-            fmt.Printf("%3d: you  ", rating.You.Place)
-            if showTime {
-                for _, res := range rating.You.Results {
-                    fmt.Printf("| %3d %2d:%02d:%02d ", res[0], res[1] / 3600, res[1] % 3600 / 60, res[1] % 60)
-                }
-            } else {
-                for _, res := range rating.You.Results {
-                    fmt.Printf("| %3d ", res[0])
-                }
-            }
-            fmt.Printf(" %d\n", rating.You.Sum)
-        }
+	for {
+		for _, points := range rating.Table {
+			fmt.Printf("%3d: %30s ", points.Place, points.Login)
+			if showTime {
+				for _, res := range points.Results {
+					fmt.Printf("| %3d %2d:%02d:%02d ", res[0], res[1]/3600, res[1]%3600/60, res[1]%60)
+				}
+			} else {
+				for _, res := range points.Results {
+					fmt.Printf("| %3d ", res[0])
+				}
+			}
+			fmt.Printf(" %d\n", points.Sum)
+		}
 
-        quit := false
-        if showAll {
-            curPage++
-            if curPage == rating.Pages + 1 {
-                quit = true
-            }
-        } else {
-            validChoice := false
-            var choice string
-            for !validChoice {
-                fmt.Scanln(&choice)
-                validChoice = true
-                switch choice {
-                case "+":
-                    curPage = curPage % rating.Pages + 1
-                case "-":
-                    curPage = (curPage + rating.Pages - 2) % rating.Pages + 1
-                case "q":
-                    quit = true
-                default:
-                    fmt.Println("Wrong option: (+/-/q)")
-                    validChoice = false
-                }
-            }
-        }
-        if quit {
-            break
-        }
-        q := reqUrl.Query()
-        q.Set("page", fmt.Sprint(curPage))
-        reqUrl.RawQuery = q.Encode()
-        makeSortmeRequest("GET", reqUrl, nil, &rating, config)
-    }
+		if !showAll {
+			fmt.Printf("%d / %d pages\n", curPage, rating.Pages)
+			fmt.Printf("%3d: you  ", rating.You.Place)
+			if showTime {
+				for _, res := range rating.You.Results {
+					fmt.Printf("| %3d %2d:%02d:%02d ", res[0], res[1]/3600, res[1]%3600/60, res[1]%60)
+				}
+			} else {
+				for _, res := range rating.You.Results {
+					fmt.Printf("| %3d ", res[0])
+				}
+			}
+			fmt.Printf(" %d\n", rating.You.Sum)
+		}
 
-    return nil
+		quit := false
+		if showAll {
+			curPage++
+			if curPage == rating.Pages+1 {
+				quit = true
+			}
+		} else {
+			validChoice := false
+			var choice string
+			for !validChoice {
+				fmt.Scanln(&choice)
+				validChoice = true
+				switch choice {
+				case "+":
+					curPage = curPage%rating.Pages + 1
+				case "-":
+					curPage = (curPage+rating.Pages-2)%rating.Pages + 1
+				case "q":
+					quit = true
+				default:
+					fmt.Println("Wrong option: (+/-/q)")
+					validChoice = false
+				}
+			}
+		}
+		if quit {
+			break
+		}
+		q := reqUrl.Query()
+		q.Set("page", fmt.Sprint(curPage))
+		reqUrl.RawQuery = q.Encode()
+		makeSortmeRequest("GET", reqUrl, nil, &rating, config)
+	}
+
+	return nil
 }
 
 func CreateConfig() (Config, error) {
@@ -439,4 +439,3 @@ func GetConfig() (Config, error) {
 
 	return config, nil
 }
-

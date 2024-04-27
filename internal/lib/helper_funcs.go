@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
-    "strconv"
 )
 
 func makeSortmeRequest(method string, reqUrl url.URL, body io.Reader, v any, config *Config) error {
@@ -120,16 +120,16 @@ func doesLangExist(lang string, statements *Statements) bool {
 }
 
 func TaskIndToInt(taskInd string) (int, error) {
-    taskNum, err := strconv.Atoi(taskInd)
-    taskChar := []byte(taskInd)[0]
-    if err != nil {
-        if int('a') <= int(taskChar) && int(taskChar) <= int('z') {
-            taskNum = int(taskChar) - int('a')
-        } else if int('A') <= int(taskChar) && int(taskChar) <= int('Z') {
-            taskNum = int(taskChar) - int('A')
-        } else {
-            return 0, fmt.Errorf("task format is not recognized")
-        }
-    }
-    return taskNum, nil
+	taskNum, err := strconv.Atoi(taskInd)
+	taskChar := []byte(taskInd)[0]
+	if err != nil {
+		if int('a') <= int(taskChar) && int(taskChar) <= int('z') {
+			taskNum = int(taskChar) - int('a')
+		} else if int('A') <= int(taskChar) && int(taskChar) <= int('Z') {
+			taskNum = int(taskChar) - int('A')
+		} else {
+			return 0, fmt.Errorf("task format is not recognized")
+		}
+	}
+	return taskNum, nil
 }

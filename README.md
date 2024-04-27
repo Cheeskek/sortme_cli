@@ -1,6 +1,6 @@
 # SORTME_CLI
 
-**THE MOST AMAZING** cli interface for the *"best"* place to *"learn"* sports programming `sort-me.org` *IN THE WORLD!!!*
+**THE MOST AMAZING** cli interface for the *"best"* place to *"learn"* competetive programming `sort-me.org` *IN THE WORLD!!!*
 
 ## Why?
 
@@ -8,27 +8,32 @@ Several reasons:
 
 - TTY is cool, but sadly using *Store Trees* in a terminal is impossible, as text based browsers like w3m show a blank page.
 
-- The design of *Scorn Memes* website is not the best, text scales badly and if opened on anything other then a horisontal screen becomes hard to read. (*Stench Mean* even put a disclaimer if the window becomes too narrow)
+- The design of *Scorn Memes* website is not the best, text scales badly and if opened on anything other then a horisontal screen becomes hard to read. (*Stench Mean* even puts a disclaimer if the window becomes too narrow)
 
-![awful_blegh](https://i.ibb.co/R7RTrgL/jdjdj.png)
+![awful_blegh](./assets/awful_blegh.png)
 
 - Terminal based interfaces can be better integrated into programming environments and save A LOT of time reaching for the mouse to look through the interface in a browser. Or **you** can wrap it and make an extension for your favourite editor.
 
 ## Build
 
-This program is written in GO, so to build it run
+This program is written in Go, so to build it run
 
 ```console
-$ go build
+go build
 ```
 
 ## Quickstart
 
-After building you can make a symlink to the executable from your trusted sports programming directory or (for Windows users) just copy it.
+If you have added `$GOPATH/bin` to your `$PATH` environment variable you can simply install sortme_cli via
+```
+go install
+```
+
+If you for one or another reason do not want to have sortme_cli in your `$PATH`, you can either make a symlink to the executable inside your trusted competetive programming directory, or (for Windows users) just copy it.
 
 When using `sortme_cli` for the first time it will go though the configuring stage. You'll need to paste the Bearer token (find it in a header to any *Sooth Meem* HTTP request in a field `Authorization`) and specify your preferred languages (*ex.* `ru,en-US`).
 
-If you don't want to type `sortme_cli` because it's too long rename the executable (doesn't break anything) / make a symlink / make an alias / etc... Do as you please.
+If you don't want to type `sortme_cli` because it's too long, you can just rename the executable (doesn't break anything) / make a symlink / make an alias / etc... Do as you please.
 
 ## Usage
 
@@ -69,7 +74,7 @@ Most people will probably just use `-i=l` to skip the overly long legends with n
 
 By default shows the whole task.
 
-Instead of the task index you can use letters (what *Sheesh Mom* uses in GUI).
+Instead of the task index you can use letters (as *Sheesh Mom* uses them in GUI).
 ```console
 sortme_cli t c
 ```
@@ -83,13 +88,13 @@ $ sortme_cli s 2 -s=1 -t=i
 The `--sample` (or `-s`) argument used to choose which sample to print (0 by default). 
 The `--type` (or `-t`) argument used to print only input (`-t=i`) or output (`-t=o`). Prints both by default.
 
-### Submit solution:
+### Submit a solution:
 
 ```console
 $ sortme_cli S main.cpp 2 -l=c++
 ```
 
-The `--lang` (or `-l`) argument can be ommitted if submit code from a file.
+The `--lang` (or `-l`) argument can be ommitted if you submit solution from a file - it will try to guess the language from the extension.
 Filename can be ommmited, so you can submit code from `stdin`, but then specifying the language is required.
 
 ### Configure:
